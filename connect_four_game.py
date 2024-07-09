@@ -104,7 +104,7 @@ class ConnectFourState:
 
 def test_connect_four_state():
     # Create initial game state
-    board = np.zeros((4, 4))
+    board = np.zeros((ROWS, COLUMNS))
     game_state = ConnectFourState(board, PLAYER_PIECE)
 
     print("Testing get_neighbors:")
@@ -129,7 +129,7 @@ def test_connect_four_state():
 
     # Fill the column and test winning_move (should be True)
     print("Filling a column to test winning_move:")
-    for i in range(3):
+    for i in range(COLUMNS):
         row = game_state.get_next_open_row(col)
         drop_piece(game_state.board, row, col, PLAYER_PIECE)
     game_state.print_board()
