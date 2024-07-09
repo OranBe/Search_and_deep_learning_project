@@ -59,18 +59,19 @@ def score_position(board, piece):
     return score
 
 
-def is_terminal_node(board):
-    return winning_move(board, PLAYER_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
+def is_terminal_node(state):
+    return state.winning_move(PLAYER_PIECE) or state.winning_move(AI_PIECE) or len(state.get_valid_locations()) == 0
 
 
-def minimax(board, depth, alpha, beta, maximizingPlayer):
-    valid_locations = get_valid_locations(board)
-    is_terminal = is_terminal_node(board)
+def minimax(state, depth, alpha, beta, maximizingPlayer):
+    board = state.board
+    valid_locations = state.get_valid_locations()
+    is_terminal = is_terminal_node(state)
     if depth == 0 or is_terminal:
         if is_terminal:
-            if winning_move(board, AI_PIECE):
+            if state.winning_move(board, AI_PIECE):
                 return None, 100000000000000
-            elif winning_move(board, PLAYER_PIECE):
+            elif state.winning_move(board, PLAYER_PIECE):
                 return None, -10000000000000
             else:  # Game is over, no more valid moves
                 return None, 0
@@ -80,10 +81,11 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
         value = -math.inf
         column = random.choice(valid_locations)
         for col in valid_locations:
-            row = get_next_open_row(board, col)
+            row = state.get_next_open_row(col)
             b_copy = board.copy()
             drop_piece(b_copy, row, col, AI_PIECE)
-            new_score = minimax(b_copy, depth - 1, alpha, beta, False)[1]
+            new_state = ConnectFourState(b_copy, PLAYER_PIECE)
+            new_score = minimax(new_state, depth - 1, alpha, beta, False)[1]
             if new_score > value:
                 value = new_score
                 column = col
@@ -96,10 +98,11 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
         value = math.inf
         column = random.choice(valid_locations)
         for col in valid_locations:
-            row = get_next_open_row(board, col)
+            row = state.get_next_open_row(col)
             b_copy = board.copy()
             drop_piece(b_copy, row, col, PLAYER_PIECE)
-            new_score = minimax(b_copy, depth - 1, alpha, beta, True)[1]
+            new_state = ConnectFourState(b_copy, AI_PIECE)
+            new_score = minimax(new_state, depth - 1, alpha, beta, True)[1]
             if new_score < value:
                 value = new_score
                 column = col
@@ -107,3 +110,15 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
             if alpha >= beta:
                 break
         return column, value
+
+
+def main():
+    initial_state = ConnectFourState(None, PLAYER_PIECE)
+    initial_state.print_board()
+
+    # Test minimax function
+    col, minimax_score = minimax(initial_state, 4, -math.inf, math.inf, True)
+    print(f"Best column: {col}, Minimax score: {minimax_score}")
+
+if __name__ == "__main__":
+    main()
