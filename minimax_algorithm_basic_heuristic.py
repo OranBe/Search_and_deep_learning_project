@@ -69,9 +69,9 @@ def minimax(state, depth, alpha, beta, maximizingPlayer):
     is_terminal = is_terminal_node(state)
     if depth == 0 or is_terminal:
         if is_terminal:
-            if state.winning_move(board, AI_PIECE):
+            if state.winning_move(AI_PIECE):
                 return None, 100000000000000
-            elif state.winning_move(board, PLAYER_PIECE):
+            elif state.winning_move(PLAYER_PIECE):
                 return None, -10000000000000
             else:  # Game is over, no more valid moves
                 return None, 0

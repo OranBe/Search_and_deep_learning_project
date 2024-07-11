@@ -3,47 +3,47 @@ import random
 from connect_four_game import *
 from minimax_algorithm_basic_heuristic import minimax
 
-board = create_board()
-game_over = False
-print_board(board)
-turn = random.randint(PLAYER_PIECE, AI_PIECE)
 
-while not game_over and not its_a_draw(board):
-    # Player's turn
-    if turn == PLAYER_PIECE:
-        col = random.choice(get_valid_locations(board))
-        if is_valid_location(board, col):
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, PLAYER_PIECE)
+def main():
+    current_state = ConnectFourState(None, PLAYER_PIECE)
+    current_state.print_board()
+    game_over = False
+    turn = random.randint(PLAYER_PIECE, AI_PIECE)
 
-            if winning_move(board, PLAYER_PIECE):
-                print_board(board)
-                print("PLAYER 1 WINS!")
-                game_over = True
+    while not game_over:
+        # Player's turn
+        if turn == PLAYER_PIECE:
+            col = random.choice(current_state.get_valid_locations())
+            if current_state.is_valid_location(col):
+                row = current_state.get_next_open_row(col)
+                drop_piece(current_state.board, row, col, PLAYER_PIECE)
+                current_state = ConnectFourState(current_state.board, AI_PIECE)  # Update the state
+                if current_state.winning_move(PLAYER_PIECE):
+                    current_state.print_board()
+                    print("PLAYER 1 WINS!")
+                    game_over = True
 
-            turn = AI_PIECE
-            # turn += 1
-            # turn = turn % 2
+                turn = AI_PIECE
+                # turn += 1
+                # turn = turn % 2
 
-    # AI's turn
-    if turn == AI_PIECE and not game_over:
-        col, minimax_score = minimax(board, 4, -math.inf, math.inf, True)
-        if is_valid_location(board, col):
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, AI_PIECE)
+        # AI's turn
+        if turn == AI_PIECE and not game_over:
+            col, minimax_score = minimax(current_state, 4, -math.inf, math.inf, True)
+            if current_state.is_valid_location(col):
+                row = current_state.get_next_open_row(col)
+                drop_piece(current_state.board, row, col, AI_PIECE)
+                current_state = ConnectFourState(current_state.board, AI_PIECE)  # Update the state
+                if current_state.winning_move(AI_PIECE):
+                    current_state.print_board()
+                    print("PLAYER 2 WINS!")
+                    game_over = True
 
-            if winning_move(board, AI_PIECE):
-                print_board(board)
-                print("PLAYER 2 WINS!")
-                game_over = True
+                turn = PLAYER_PIECE
+                # turn += 1
+                # turn = turn % 2
 
-            turn = PLAYER_PIECE
-            # turn += 1
-            # turn = turn % 2
+        current_state.print_board()
 
-    print_board(board)
-
-if its_a_draw(board):
-    print("IT'S A DRAW!")
-else:
-    print("GAME OVER")
+if __name__ == "__main__":
+    main()
