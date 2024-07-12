@@ -102,6 +102,19 @@ class ConnectFourState:
         print(np.flip(self.board, 0))
 
 
+def create_state_with_n_moves(n):
+    state = ConnectFourState()
+    for _ in range(n):
+        valid_locations = state.get_valid_locations()
+        if not valid_locations:
+            break
+        col = random.choice(valid_locations)
+        row = state.get_next_open_row(col)
+        drop_piece(state.board, row, col, state.player)
+        state.player = 1 if state.player == 0 else 0
+    return state
+
+
 def test_connect_four_state():
     # Create initial game state
     board = np.zeros((ROWS, COLUMNS))
