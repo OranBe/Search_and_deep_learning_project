@@ -4,27 +4,68 @@ import torch.optim as optim
 import numpy as np
 
 
-# class BaseHeuristic:
-#     def __init__(self, n=11, k=4):
-#         self._n = n
-#         self._k = k
-#
-#     def get_h_values(self, states):
-#         states_as_list = [state.get_state_as_list() for state in states]
-#         gaps = []
-#
-#         for state_as_list in states_as_list:
-#             gap = 0
-#             if state_as_list[0] != 1:
-#                 gap = 1
-#
-#             for i in range(len(state_as_list) - 1):
-#                 if abs(state_as_list[i] - state_as_list[i + 1]) != 1:
-#                     gap += 1
-#
-#             gaps.append(gap)
-#
-#         return gaps
+class BaseHeuristic:
+    def __init__(self, player_piece, ai_piece, rows, columns, empty, window_length):
+        self.player_piece = player_piece
+        self.ai_piece = ai_piece
+        self.rows = rows
+        self.columns = columns
+        self.empty = empty
+        self.window_length = window_length
+
+    def evaluate_window(self, window, piece):
+        score = 0
+        opp_piece = self.player_piece
+        if piece == self.player_piece:
+            opp_piece = self.ai_piece
+
+        if window.count(piece) == 4:
+            score += 100
+        elif window.count(piece) == 3 and window.count(self.empty) == 1:
+            score += 5
+        elif window.count(piece) == 2 and window.count(self.empty) == 2:
+            score += 2
+
+        if window.count(opp_piece) == 3 and window.count(self.empty) == 1:
+            score -= 4
+
+        return score
+
+    def score_position(self, board, piece):
+        score = 0
+
+        # Score center column
+        center_array = [int(i) for i in list(board[:, self.columns // 2])]
+        center_count = center_array.count(piece)
+        score += center_count * 3
+
+        # Score Horizontal
+        for r in range(self.rows):
+            row_array = [int(i) for i in list(board[r, :])]
+            for c in range(self.columns - 3):
+                window = row_array[c:c + self.window_length]
+                score += self.evaluate_window(window, piece)
+
+        # Score Vertical
+        for c in range(self.columns):
+            col_array = [int(i) for i in list(board[:, c])]
+            for r in range(self.rows - 3):
+                window = col_array[r:r + self.window_length]
+                score += self.evaluate_window(window, piece)
+
+        # Score positive sloped diagonal
+        for r in range(self.rows - 3):
+            for c in range(self.columns - 3):
+                window = [board[r + i][c + i] for i in range(self.window_length)]
+                score += self.evaluate_window(window, piece)
+
+        # Score negative sloped diagonal
+        for r in range(self.rows - 3):
+            for c in range(self.columns - 3):
+                window = [board[r + 3 - i][c + i] for i in range(self.window_length)]
+                score += self.evaluate_window(window, piece)
+
+        return score
 
 
 class HeuristicModel(nn.Module):

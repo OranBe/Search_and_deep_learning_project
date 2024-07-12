@@ -2,6 +2,7 @@ import math
 import random
 from connect_four_game import *
 from minimax_algorithm_basic_heuristic import minimax
+from heuristics import BaseHeuristic
 
 
 def main():
@@ -9,7 +10,7 @@ def main():
     current_state.print_board()
     game_over = False
     turn = random.randint(PLAYER_PIECE, AI_PIECE)
-
+    heuristic = BaseHeuristic(PLAYER_PIECE, AI_PIECE,ROWS, COLUMNS, EMPTY, WINDOW_LENGTH)
     while not game_over:
         # Player's turn
         if turn == PLAYER_PIECE:
@@ -29,7 +30,7 @@ def main():
 
         # AI's turn
         if turn == AI_PIECE and not game_over:
-            col, minimax_score = minimax(current_state, 4, -math.inf, math.inf, True)
+            col, minimax_score = minimax(current_state, 4, -math.inf, math.inf, True,heuristic)
             if current_state.is_valid_location(col):
                 row = current_state.get_next_open_row(col)
                 drop_piece(current_state.board, row, col, AI_PIECE)
