@@ -10,7 +10,7 @@ def main():
     current_state.print_board()
     game_over = False
     turn = random.randint(PLAYER_PIECE, AI_PIECE)
-    heuristic = BaseHeuristic(PLAYER_PIECE, AI_PIECE,ROWS, COLUMNS, EMPTY, WINDOW_LENGTH)
+    heuristic = BaseHeuristic(PLAYER_PIECE, AI_PIECE, ROWS, COLUMNS, EMPTY, WINDOW_LENGTH)
     while not game_over:
         # Player's turn
         if turn == PLAYER_PIECE:

@@ -31,39 +31,39 @@ class BaseHeuristic:
 
         return score
 
-    def score_position(self, board, piece):
+    def score_position(self, state):
         score = 0
 
         # Score center column
-        center_array = [int(i) for i in list(board[:, self.columns // 2])]
-        center_count = center_array.count(piece)
+        center_array = [int(i) for i in list(state.board[:, self.columns // 2])]
+        center_count = center_array.count(state.player)
         score += center_count * 3
 
         # Score Horizontal
         for r in range(self.rows):
-            row_array = [int(i) for i in list(board[r, :])]
+            row_array = [int(i) for i in list(state.board[r, :])]
             for c in range(self.columns - 3):
                 window = row_array[c:c + self.window_length]
-                score += self.evaluate_window(window, piece)
+                score += self.evaluate_window(window, state.player)
 
         # Score Vertical
         for c in range(self.columns):
-            col_array = [int(i) for i in list(board[:, c])]
+            col_array = [int(i) for i in list(state.board[:, c])]
             for r in range(self.rows - 3):
                 window = col_array[r:r + self.window_length]
-                score += self.evaluate_window(window, piece)
+                score += self.evaluate_window(window, state.player)
 
         # Score positive sloped diagonal
         for r in range(self.rows - 3):
             for c in range(self.columns - 3):
-                window = [board[r + i][c + i] for i in range(self.window_length)]
-                score += self.evaluate_window(window, piece)
+                window = [state.board[r + i][c + i] for i in range(self.window_length)]
+                score += self.evaluate_window(window, state.player)
 
         # Score negative sloped diagonal
         for r in range(self.rows - 3):
             for c in range(self.columns - 3):
-                window = [board[r + 3 - i][c + i] for i in range(self.window_length)]
-                score += self.evaluate_window(window, piece)
+                window = [state.board[r + 3 - i][c + i] for i in range(self.window_length)]
+                score += self.evaluate_window(window, state.player)
 
         return score
 
@@ -104,6 +104,9 @@ class ConnectFourHeuristic:
         with torch.no_grad():
             predictions = self._model(states_tensor).numpy()
         return predictions.flatten()
+
+    def score_position(self, state):
+        return self.get_h_values([state])
 
     def train_model(self, input_data, output_labels, epochs=100):
         input_as_list = [state.get_state_as_list() for state in input_data]

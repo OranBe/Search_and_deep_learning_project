@@ -20,7 +20,10 @@ class ConnectFourState:
             self.board = np.zeros((ROWS, COLUMNS))
         else:
             self.board = board
-        self.player = player
+        if player is None:
+            self.player = PLAYER_PIECE
+        else:
+            self.player = player
 
     def __eq__(self, other):
         if isinstance(other, ConnectFourState):
@@ -101,9 +104,15 @@ class ConnectFourState:
     def print_board(self):
         print(np.flip(self.board, 0))
 
+    def is_terminal_node(self):
+        return self.winning_move(PLAYER_PIECE) or self.winning_move(AI_PIECE) or len(self.get_valid_locations()) == 0
+
+    def get_state_as_list(self):
+        return self.board.flatten().tolist()
+
 
 def create_state_with_n_moves(n):
-    state = ConnectFourState()
+    state = ConnectFourState(None, None)
     for _ in range(n):
         valid_locations = state.get_valid_locations()
         if not valid_locations:
@@ -111,8 +120,12 @@ def create_state_with_n_moves(n):
         col = random.choice(valid_locations)
         row = state.get_next_open_row(col)
         drop_piece(state.board, row, col, state.player)
-        state.player = 1 if state.player == 0 else 0
+        state.player = 1 if state.player == 2 else 2
     return state
+
+
+
+
 
 
 def test_connect_four_state():

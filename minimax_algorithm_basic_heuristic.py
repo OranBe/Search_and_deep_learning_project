@@ -4,14 +4,10 @@ from connect_four_game import *
 from heuristics import BaseHeuristic
 
 
-def is_terminal_node(state):
-    return state.winning_move(PLAYER_PIECE) or state.winning_move(AI_PIECE) or len(state.get_valid_locations()) == 0
-
-
 def minimax(state, depth, alpha, beta, maximizingPlayer, heuristic):
     board = state.board
     valid_locations = state.get_valid_locations()
-    is_terminal = is_terminal_node(state)
+    is_terminal = state.is_terminal_node()
     if depth == 0 or is_terminal:
         if is_terminal:
             if state.winning_move(AI_PIECE):
@@ -21,7 +17,7 @@ def minimax(state, depth, alpha, beta, maximizingPlayer, heuristic):
             else:  # Game is over, no more valid moves
                 return None, 0
         else:  # Depth is zero
-            return None, heuristic.score_position(board, AI_PIECE)
+            return None, heuristic(state)[0]
     if maximizingPlayer:
         value = -math.inf
         column = random.choice(valid_locations)
