@@ -2,8 +2,8 @@ import random
 
 import numpy as np
 
-ROWS = 4
-COLUMNS = 4
+ROWS = 5
+COLUMNS = 5
 PLAYER_PIECE = 1
 AI_PIECE = 2
 EMPTY = 0

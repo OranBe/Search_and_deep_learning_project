@@ -46,5 +46,6 @@ def main():
 
         current_state.print_board()
 
+
 if __name__ == "__main__":
     main()

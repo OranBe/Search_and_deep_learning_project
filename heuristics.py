@@ -68,15 +68,15 @@ class BaseHeuristic:
         return score
 
 
-class HeuristicModel(nn.Module):
+class ConnectFourHeuristicModel(nn.Module):
     def __init__(self, input_dim):
-        super(HeuristicModel, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 64)
-        self.dropout1 = nn.Dropout(0.25)
-        self.fc2 = nn.Linear(64, 32)
-        self.dropout2 = nn.Dropout(0.25)
-        self.fc3 = nn.Linear(32, 16)
-        self.fc4 = nn.Linear(16, 1)
+        super(ConnectFourHeuristicModel, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 128)
+        self.dropout1 = nn.Dropout(0.3)
+        self.fc2 = nn.Linear(128, 64)
+        self.dropout2 = nn.Dropout(0.3)
+        self.fc3 = nn.Linear(64, 32)
+        self.fc4 = nn.Linear(32, 1)
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))
@@ -88,11 +88,12 @@ class HeuristicModel(nn.Module):
         return x
 
 
-class LearnedHeuristic:
-    def __init__(self, n=11, k=4):
-        self._n = n
-        self._k = k
-        self._model = HeuristicModel(n)
+class ConnectFourHeuristic:
+    def __init__(self, rows=5, columns=5):
+        self._rows = rows
+        self._columns = columns
+        self._input_dim = rows * columns
+        self._model = ConnectFourHeuristicModel(self._input_dim)
         self._criterion = nn.MSELoss()
         self._optimizer = optim.Adam(self._model.parameters(), lr=0.001)
 
@@ -129,12 +130,84 @@ class LearnedHeuristic:
         self._model.eval()
 
 
-class BootstrappingHeuristic(LearnedHeuristic):
-    def __init__(self, n=11, k=4):
-        super().__init__(n, k)
+class BootstrappingConnectFourHeuristic(ConnectFourHeuristic):
+    def __init__(self, rows=5, columns=5):
+        super().__init__(rows, columns)
 
     def save_model(self):
-        super().save_model('bootstrapping_heuristic.pth')
+        super().save_model('bootstrapping_connect_four_heuristic.pth')
 
     def load_model(self):
-        super().load_model('bootstrapping_heuristic.pth')
+        super().load_model('bootstrapping_connect_four_heuristic.pth')
+
+
+# class HeuristicModel(nn.Module):
+#     def __init__(self, input_dim):
+#         super(HeuristicModel, self).__init__()
+#         self.fc1 = nn.Linear(input_dim, 64)
+#         self.dropout1 = nn.Dropout(0.25)
+#         self.fc2 = nn.Linear(64, 32)
+#         self.dropout2 = nn.Dropout(0.25)
+#         self.fc3 = nn.Linear(32, 16)
+#         self.fc4 = nn.Linear(16, 1)
+#
+#     def forward(self, x):
+#         x = torch.relu(self.fc1(x))
+#         x = self.dropout1(x)
+#         x = torch.relu(self.fc2(x))
+#         x = self.dropout2(x)
+#         x = torch.relu(self.fc3(x))
+#         x = self.fc4(x)
+#         return x
+#
+#
+# class LearnedHeuristic:
+#     def __init__(self, n=11, k=4):
+#         self._n = n
+#         self._k = k
+#         self._model = HeuristicModel(n)
+#         self._criterion = nn.MSELoss()
+#         self._optimizer = optim.Adam(self._model.parameters(), lr=0.001)
+#
+#     def get_h_values(self, states):
+#         states_as_list = [state.get_state_as_list() for state in states]
+#         states = np.array(states_as_list, dtype=np.float32)
+#         states_tensor = torch.tensor(states)
+#         with torch.no_grad():
+#             predictions = self._model(states_tensor).numpy()
+#         return predictions.flatten()
+#
+#     def train_model(self, input_data, output_labels, epochs=100):
+#         input_as_list = [state.get_state_as_list() for state in input_data]
+#         inputs = np.array(input_as_list, dtype=np.float32)
+#         outputs = np.array(output_labels, dtype=np.float32)
+#
+#         inputs_tensor = torch.tensor(inputs)
+#         outputs_tensor = torch.tensor(outputs).unsqueeze(1)  # Adding a dimension for the output
+#
+#         for epoch in range(epochs):
+#             self._model.train()
+#             self._optimizer.zero_grad()
+#
+#             predictions = self._model(inputs_tensor)
+#             loss = self._criterion(predictions, outputs_tensor)
+#             loss.backward()
+#             self._optimizer.step()
+#
+#     def save_model(self, path):
+#         torch.save(self._model.state_dict(), path)
+#
+#     def load_model(self, path):
+#         self._model.load_state_dict(torch.load(path))
+#         self._model.eval()
+#
+#
+# class BootstrappingHeuristic(LearnedHeuristic):
+#     def __init__(self, n=11, k=4):
+#         super().__init__(n, k)
+#
+#     def save_model(self):
+#         super().save_model('bootstrapping_heuristic.pth')
+#
+#     def load_model(self):
+#         super().load_model('bootstrapping_heuristic.pth')
