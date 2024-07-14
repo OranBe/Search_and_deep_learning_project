@@ -2,30 +2,35 @@ import math
 import random
 from BWAS import BWAS
 from connect_four_game import *
-from heuristics import BootstrappingConnectFourHeuristic
+from heuristics import BootstrappingConnectFourHeuristic, BaseHeuristic
 from minimax_algorithm_basic_heuristic import minimax
 
 
 def bootstrappingTraining(BootstrappingConnectFourHeuristic):
     # BootstrappingConnectFourHeuristic.load_model()
     num_iterations = 1000  # Number of bootstrapping iterations
-    batch_size = 50  # Number of states to generate in each batch
+    batch_size = 20  # Number of states to generate in each batch
     max_moves = 20
     depth = 4
     heuristic = BootstrappingConnectFourHeuristic.score_position
-
     for _ in range(num_iterations):
         print("num of iteration:", _)
         random_states = generate_minibatch_of_random_states(batch_size, max_moves)
         input_data = []
         output_labels = []
+        win = 0
+        lose = 0
         for state in random_states:
             _, score = minimax(state, depth, -math.inf, math.inf, True, heuristic)
 
             path = [state]
             current_state = state
             while not current_state.is_terminal_node():
-                column, _ = minimax(current_state, depth, -math.inf, math.inf, True, heuristic)
+                if current_state.player == AI_PIECE:
+                    column, _ = minimax(current_state, depth, -math.inf, math.inf, True, heuristic)
+                else:
+                    column, _ = minimax(current_state, depth, -math.inf, math.inf, False, heuristic)
+
                 row = current_state.get_next_open_row(column)
                 b_copy = current_state.board.copy()
                 drop_piece(b_copy, row, column, AI_PIECE if current_state.player == PLAYER_PIECE else PLAYER_PIECE)
@@ -33,11 +38,16 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic):
                 path.append(current_state)
 
             if path and current_state.is_terminal_node() and current_state.winning_move(AI_PIECE):
+                win += 1
                 len_path = len(path)
                 for i, path_board in enumerate(path):
                     new_state = ConnectFourState(path_board.board, 1 if i % 2 == 0 else 0)
                     input_data.append(new_state)
                     output_labels.append(len_path - 1 - i)
+            else:
+                lose += 1
+        print("Win:", win, "Lose:", lose)
+
 
         if input_data and output_labels:
             BootstrappingConnectFourHeuristic.train_model(input_data, output_labels, 5)
