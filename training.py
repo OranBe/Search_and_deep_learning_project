@@ -2,7 +2,7 @@ import math
 import random
 from BWAS import BWAS
 from connect_four_game import *
-from heuristics import ConnectFourHeuristic
+from heuristics import BootstrappingConnectFourHeuristic
 from minimax_algorithm_basic_heuristic import minimax
 
 
@@ -32,7 +32,7 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic):
                 current_state = ConnectFourState(b_copy, PLAYER_PIECE if current_state.player == AI_PIECE else AI_PIECE)
                 path.append(current_state)
 
-            if path:
+            if path and current_state.is_terminal_node() and current_state.winning_move(AI_PIECE):
                 len_path = len(path)
                 for i, path_board in enumerate(path):
                     new_state = ConnectFourState(path_board.board, 1 if i % 2 == 0 else 0)
@@ -56,7 +56,7 @@ def generate_minibatch_of_random_states(number_of_random_states, max_moves):
 
 def main():
     # Initialize the heuristic
-    heuristic = ConnectFourHeuristic()
+    heuristic = BootstrappingConnectFourHeuristic()
 
     # Debug information for initialization
     print("Initialized BootstrappingConnectFourHeuristic")
