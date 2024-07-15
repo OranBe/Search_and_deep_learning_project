@@ -24,6 +24,7 @@ class ConnectFourState:
             self.player = PLAYER_PIECE
         else:
             self.player = player
+        self.minimax_value = None
 
     def __eq__(self, other):
         if isinstance(other, ConnectFourState):

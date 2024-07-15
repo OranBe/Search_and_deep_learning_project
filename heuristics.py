@@ -68,6 +68,62 @@ class BaseHeuristic:
         return score
 
 
+class BaseHeuristicNorm:
+    def __init__(self, player_piece, ai_piece, rows, columns, empty, window_length):
+        self.player_piece = player_piece
+        self.ai_piece = ai_piece
+        self.rows = rows
+        self.columns = columns
+        self.empty = empty
+        self.window_length = window_length
+
+    def evaluate_window(self, window, piece):
+        score = 0
+        opp_piece = self.player_piece if piece == self.ai_piece else self.ai_piece
+
+        if window.count(piece) == 4:
+            score += 1
+        elif window.count(piece) == 3 and window.count(self.empty) == 1:
+            score += 0.1
+        elif window.count(piece) == 2 and window.count(self.empty) == 2:
+            score += 0.05
+
+        if window.count(opp_piece) == 3 and window.count(self.empty) == 1:
+            score -= 0.1
+
+        return score
+
+    def score_position(self, state):
+        score = 0
+        center_array = [int(i) for i in list(state.board[:, self.columns // 2])]
+        center_count = center_array.count(self.ai_piece)
+        score += center_count * 0.15
+
+        for r in range(self.rows):
+            row_array = [int(i) for i in list(state.board[r, :])]
+            for c in range(self.columns - 3):
+                window = row_array[c:c + self.window_length]
+                score += self.evaluate_window(window, self.ai_piece)
+
+        for c in range(self.columns):
+            col_array = [int(i) for i in list(state.board[:, c])]
+            for r in range(self.rows - 3):
+                window = col_array[r:r + self.window_length]
+                score += self.evaluate_window(window, self.ai_piece)
+
+        for r in range(self.rows - 3):
+            for c in range(self.columns - 3):
+                window = [state.board[r + i][c + i] for i in range(self.window_length)]
+                score += self.evaluate_window(window, self.ai_piece)
+
+        for r in range(self.rows - 3):
+            for c in range(self.columns - 3):
+                window = [state.board[r + 3 - i][c + i] for i in range(self.window_length)]
+                score += self.evaluate_window(window, self.ai_piece)
+
+        return score
+
+
 class ConnectFourHeuristicModel(nn.Module):
     def __init__(self, input_dim):
         super(ConnectFourHeuristicModel, self).__init__()
@@ -125,6 +181,8 @@ class ConnectFourHeuristic:
             loss.backward()
             self._optimizer.step()
 
+            print(f'Epoch {epoch + 1}/{epochs}, Loss: {loss.item()}')
+
     def save_model(self, path):
         torch.save(self._model.state_dict(), path)
 
@@ -142,7 +200,6 @@ class BootstrappingConnectFourHeuristic(ConnectFourHeuristic):
 
     def load_model(self):
         super().load_model('bootstrapping_connect_four_heuristic.pth')
-
 
 # class HeuristicModel(nn.Module):
 #     def __init__(self, input_dim):
