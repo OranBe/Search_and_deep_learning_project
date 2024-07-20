@@ -113,7 +113,7 @@ class ConnectFourState:
 
 
 def create_state_with_n_moves(n):
-    state = ConnectFourState(None, None)
+    state = ConnectFourState(None, 1)
     for _ in range(n):
         valid_locations = state.get_valid_locations()
         if not valid_locations:
