@@ -6,15 +6,20 @@ from heuristics import BootstrappingConnectFourHeuristic, BaseHeuristic
 from minimax_algorithm_basic_heuristic import minimax
 
 
-def bootstrappingTraining(BootstrappingConnectFourHeuristic):
-    BootstrappingConnectFourHeuristic.load_model()
-    num_iterations = 500  # Number of bootstrapping iterations
+def bootstrappingTraining(BootstrappingConnectFourHeuristic, target_network):
+    # BootstrappingConnectFourHeuristic.load_model()
+    # target_network.load_model()
+
+    num_iterations = 100  # Number of bootstrapping iterations
     batch_size = 50  # Number of states to generate in each batch
     max_moves = 15
     depth = 4
     heuristic = BootstrappingConnectFourHeuristic.score_position
-    for _ in range(num_iterations):
-        print("num of iteration:", _)
+    target_heuristic = target_network.score_position
+    update_target_frequency = 10  # Update target network every 10 iterations
+
+    for iteration in range(num_iterations):
+        print("num of iteration:", iteration)
         random_states = generate_minibatch_of_random_states(batch_size, max_moves)
         input_data = []
         output_labels = []
@@ -29,7 +34,7 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic):
                 if current_state.player == AI_PIECE:
                     column, _ = minimax(current_state, depth, -math.inf, math.inf, True, heuristic)
                 else:
-                    column, _ = minimax(current_state, depth, -math.inf, math.inf, False, heuristic)
+                    column, _ = minimax(current_state, depth, -math.inf, math.inf, False, target_heuristic)
 
                 # perform best action
                 row = current_state.get_next_open_row(column)
@@ -60,6 +65,10 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic):
         if input_data and output_labels:
             BootstrappingConnectFourHeuristic.train_model(input_data, output_labels, 5)
 
+        if iteration % update_target_frequency == 0:
+            BootstrappingConnectFourHeuristic.update_target_network(target_network)
+            print("target network weights updated")
+
     BootstrappingConnectFourHeuristic.save_model()
     print("Model training complete and saved using Bootstrapping heuristic")
 
@@ -75,16 +84,18 @@ def generate_minibatch_of_random_states(number_of_random_states, max_moves):
 def main():
     # Initialize the heuristic
     heuristic = BootstrappingConnectFourHeuristic()
+    target_network = BootstrappingConnectFourHeuristic()
 
     # Debug information for initialization
     print("Initialized BootstrappingConnectFourHeuristic")
 
     # Load the model if needed
     # heuristic.load_model()
+    # target_network.load_model()
 
     # Run the bootstrapping training
     print("Starting bootstrapping training")
-    bootstrappingTraining(heuristic)
+    bootstrappingTraining(heuristic, target_network)
     print("Completed bootstrapping training")
 
     # Save the model after training

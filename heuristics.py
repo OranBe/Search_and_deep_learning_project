@@ -190,6 +190,9 @@ class ConnectFourHeuristic:
         self._model.load_state_dict(torch.load(path))
         self._model.eval()
 
+    def update_target_network(self, target_network):
+        target_network._model.load_state_dict(self._model.state_dict())
+
 
 class BootstrappingConnectFourHeuristic(ConnectFourHeuristic):
     def __init__(self, rows=5, columns=5):
