@@ -1,5 +1,4 @@
 import math
-
 from connect_four_game import *
 from heuristics import *
 from training import *
@@ -8,69 +7,51 @@ import time
 
 def run_experiments():
     configurations = [
-        ('BaseHeuristic', 'base_heuristic'),
-        ('NNHeuristic', 'nn_heuristic')
+        ('NN vs Base - Max (NN) starts', 'nn_heuristic', 'base_heuristic', AI_PIECE),
+        ('NN vs Base - Min (Base) starts', 'nn_heuristic', 'base_heuristic', PLAYER_PIECE)
     ]
 
     results = []
-    random_states = generate_minibatch_of_random_states(100, 20)
 
-    for heuristic_name, heuristic_function in configurations:
-        heuristic = get_heuristic(heuristic_function)
+    for experiment_name, max_heuristic_function, min_heuristic_function, starting_player in configurations:
+        max_heuristic = get_heuristic(max_heuristic_function)
+        min_heuristic = get_heuristic(min_heuristic_function)
 
-        runtimes = []
-        move_counts = []
-        win_counts = []
-        path_lengths = []
-        node_expansions = []
+        print(f"Running experiment: {experiment_name}")
 
-        print(f"Running experiments for Heuristic={heuristic_name}")
+        start_time = time.time()
+        current_state = ConnectFourState(None, starting_player)
+        current_state.player = starting_player  # Set the starting player
+        moves = 0
+        path_length = 0
 
-        for iteration, state in enumerate(random_states):
-            start_time = time.time()
-            current_state = state
-            moves = 0
-            path_length = 0
-            nodes_expanded = 0
-            while not current_state.is_terminal_node():
-                if current_state.player == AI_PIECE:
-                    column, _ = minimax(current_state, 4, -math.inf, math.inf, True, heuristic)
-                else:
-                    column, _ = minimax(current_state, 4, -math.inf, math.inf, False, heuristic)
-
-                # perform best action
-                row = current_state.get_next_open_row(column)
-                b_copy = current_state.board.copy()
-                drop_piece(b_copy, row, column, AI_PIECE if current_state.player == AI_PIECE else PLAYER_PIECE)
-                current_state = ConnectFourState(b_copy, PLAYER_PIECE if current_state.player == AI_PIECE else AI_PIECE)
-                moves += 1
-                path_length += 1
-                nodes_expanded += len(current_state.get_valid_locations())
-
-            end_time = time.time()
-            runtime = end_time - start_time
-            runtimes.append(runtime)
-            move_counts.append(moves)
-            path_lengths.append(path_length)
-            node_expansions.append(nodes_expanded)
-
-            if current_state.winning_move(AI_PIECE):
-                win_counts.append(1)
+        while not current_state.is_terminal_node():
+            if current_state.player == AI_PIECE:
+                column, _ = minimax(current_state, 4, -math.inf, math.inf, True, max_heuristic)
             else:
-                win_counts.append(0)
+                column, _ = minimax(current_state, 4, -math.inf, math.inf, False, min_heuristic)
 
-            print(f"Iteration {iteration + 1}/100 completed. Runtime: {runtime:.6f}s, Moves: {moves}, Path length: {path_length}, Expansions: {nodes_expanded}, Result: {'Win' if current_state.winning_move(AI_PIECE) else 'Loss or Tie'}")
+            # perform best action
+            row = current_state.get_next_open_row(column)
+            b_copy = current_state.board.copy()
+            drop_piece(b_copy, row, column, AI_PIECE if current_state.player == AI_PIECE else PLAYER_PIECE)
+            current_state = ConnectFourState(b_copy, PLAYER_PIECE if current_state.player == AI_PIECE else AI_PIECE)
+            moves += 1
+            path_length += 1
 
-        avg_runtime = sum(runtimes) / len(runtimes)
-        avg_moves_per_game = sum(move_counts) / len(move_counts)
-        win_rate = sum(win_counts) / len(win_counts)
-        avg_path_length = sum(path_lengths) / len(path_lengths)
-        avg_expansions = sum(node_expansions) / len(node_expansions)
+        end_time = time.time()
+        runtime = end_time - start_time
 
-        results.append((heuristic_name, avg_runtime, avg_moves_per_game, win_rate, avg_path_length, avg_expansions))
+        if current_state.winning_move(AI_PIECE):
+            win_count = 1
+        else:
+            win_count = 0
+
+        print(f"Experiment completed. Runtime: {runtime:.6f}s, Moves: {moves}, Path length: {path_length}, Result: {'Win' if current_state.winning_move(AI_PIECE) else 'Loss or Tie'}")
+
+        results.append((experiment_name, runtime, moves, win_count, path_length))
 
     print_results(results)
-
 
 def get_heuristic(name):
     if name == 'base_heuristic':
@@ -82,13 +63,10 @@ def get_heuristic(name):
     else:
         raise ValueError(f"Unknown heuristic: {name}")
 
-
 def print_results(results):
-    print(f"{'Heuristic':<20} {'Avg Runtime':<15} {'Avg Moves/Game':<15} {'Win Rate':<10} {'Avg Path Length':<20} {'Avg Expansions':<15}")
-    for heuristic, avg_runtime, avg_moves_per_game, win_rate, avg_path_length, avg_expansions in results:
-        print(f"{heuristic:<20} {avg_runtime:<15.6f} {avg_moves_per_game:<15.2f} {win_rate:<10.2f} {avg_path_length:<20.2f} {avg_expansions:<15.2f}")
-
-
+    print(f"{'Experiment':<30} {'Runtime':<15} {'Moves/Game':<15} {'Win Rate':<10} {'Path Length':<20}")
+    for experiment, runtime, moves_per_game, win_rate, path_length in results:
+        print(f"{experiment:<30} {runtime:<15.6f} {moves_per_game:<15.2f} {win_rate:<10.2f} {path_length:<20.2f}")
 
 # Example usage:
 if __name__ == "__main__":

@@ -112,8 +112,8 @@ class ConnectFourState:
         return self.board.flatten().tolist()
 
 
-def create_state_with_n_moves(n):
-    state = ConnectFourState(None, 1)
+def create_state_with_n_moves(n, starting_player):
+    state = ConnectFourState(None, starting_player)
     for _ in range(n):
         valid_locations = state.get_valid_locations()
         if not valid_locations:

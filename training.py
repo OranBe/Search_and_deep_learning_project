@@ -76,7 +76,7 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic, target_network):
 def generate_minibatch_of_random_states(number_of_random_states, max_moves):
     random_states = []
     for i in range(number_of_random_states):
-        state = create_state_with_n_moves(random.randint(1, max_moves))
+        state = create_state_with_n_moves(random.randint(1, max_moves), random.randint(1, 2))
         random_states.append(state)
     return random_states
 
