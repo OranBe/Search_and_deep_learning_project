@@ -7,22 +7,24 @@ from minimax_algorithm_basic_heuristic import minimax
 
 
 def bootstrappingTraining(BootstrappingConnectFourHeuristic, target_network):
-    # BootstrappingConnectFourHeuristic.load_model()
-    # target_network.load_model()
+    BootstrappingConnectFourHeuristic.load_model()
+    target_network.load_model()
 
     num_iterations = 100  # Number of bootstrapping iterations
     batch_size = 50  # Number of states to generate in each batch
-    max_moves = 15
+    max_moves = 13
     depth = 4
     heuristic = BootstrappingConnectFourHeuristic.score_position
     target_heuristic = target_network.score_position
-    update_target_frequency = 10  # Update target network every 10 iterations
+    original_training_frequency = 20  # Train the model every 20 iterations
+    update_target_frequency = 40  # Update target network every 10 iterations
+
+    input_data = []
+    output_labels = []
 
     for iteration in range(num_iterations):
         print("num of iteration:", iteration)
         random_states = generate_minibatch_of_random_states(batch_size, max_moves)
-        input_data = []
-        output_labels = []
         win = 0
         lose = 0
         for state in random_states:
@@ -62,12 +64,24 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic, target_network):
                         input_data.append(s)
                         output_labels.append(terminal_value)
 
-        if input_data and output_labels:
-            BootstrappingConnectFourHeuristic.train_model(input_data, output_labels, 5)
+        # if input_data and output_labels:
+        #     BootstrappingConnectFourHeuristic.train_model(input_data, output_labels, 5)
 
-        if iteration % update_target_frequency == 0:
+        # Train the model every `original_training_frequency` iterations
+        if iteration % original_training_frequency == 0 and input_data and output_labels:
+            BootstrappingConnectFourHeuristic.train_model(input_data, output_labels, 5)
+            input_data = []
+            output_labels = []
+            print("Original network weights updated")
+
+        if iteration % update_target_frequency == 0 and input_data and output_labels:
             BootstrappingConnectFourHeuristic.update_target_network(target_network)
-            print("target network weights updated")
+            print("Target network weights updated")
+
+    # Perform a final training step if there is remaining data
+    if input_data and output_labels:
+        BootstrappingConnectFourHeuristic.train_model(input_data, output_labels, 5)
+        print("Final training step for original network")
 
     BootstrappingConnectFourHeuristic.save_model()
     print("Model training complete and saved using Bootstrapping heuristic")

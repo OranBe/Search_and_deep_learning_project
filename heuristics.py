@@ -1,7 +1,11 @@
+import random
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+
+from connect_four_game import ROWS, COLUMNS
 
 
 class BaseHeuristic:
@@ -66,6 +70,18 @@ class BaseHeuristic:
                 score += self.evaluate_window(window, state.player)
 
         return score
+
+class RandomHeuristic:
+    def __init__(self, player_piece, ai_piece, rows, columns, empty, window_length):
+        self.player_piece = player_piece
+        self.ai_piece = ai_piece
+        self.rows = rows
+        self.columns = columns
+        self.empty = empty
+        self.window_length = window_length
+
+    def score_position(self, state):
+        return random.uniform(-1, 1)
 
 
 class BaseHeuristicNorm:
@@ -145,7 +161,7 @@ class ConnectFourHeuristicModel(nn.Module):
 
 
 class ConnectFourHeuristic:
-    def __init__(self, rows=5, columns=5):
+    def __init__(self, rows=ROWS, columns=COLUMNS):
         self._rows = rows
         self._columns = columns
         self._input_dim = rows * columns
@@ -195,7 +211,7 @@ class ConnectFourHeuristic:
 
 
 class BootstrappingConnectFourHeuristic(ConnectFourHeuristic):
-    def __init__(self, rows=5, columns=5):
+    def __init__(self, rows=ROWS, columns=COLUMNS):
         super().__init__(rows, columns)
 
     def save_model(self):
