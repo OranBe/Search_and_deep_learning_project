@@ -17,10 +17,12 @@ def run_experiments():
         ('NN vs Random - Min (Random) starts', 'nn_heuristic', 'random_heuristic', PLAYER_PIECE, 3),
         ('NN vs Base - Max (NN) starts', 'nn_heuristic', 'base_heuristic', AI_PIECE, 4),
         ('NN vs Base - Min (Base) starts', 'nn_heuristic', 'base_heuristic', PLAYER_PIECE, 4),
-        # ('NN vs Random - Max (NN) starts', 'nn_heuristic', 'random_heuristic', AI_PIECE, 4),
-        # ('NN vs Random - Min (Random) starts', 'nn_heuristic', 'random_heuristic', PLAYER_PIECE, 4)
+        ('NN vs Random - Max (NN) starts', 'nn_heuristic', 'random_heuristic', AI_PIECE, 4),
+        ('NN vs Random - Min (Random) starts', 'nn_heuristic', 'random_heuristic', PLAYER_PIECE, 4),
         ('NN vs Base - Max (NN) starts', 'nn_heuristic', 'base_heuristic', AI_PIECE, 5),
-        ('NN vs Base - Min (Base) starts', 'nn_heuristic', 'base_heuristic', PLAYER_PIECE, 5)
+        ('NN vs Base - Min (Base) starts', 'nn_heuristic', 'base_heuristic', PLAYER_PIECE, 5),
+        # ('NN vs Random - Max (NN) starts', 'nn_heuristic', 'random_heuristic', AI_PIECE, 5),
+        # ('NN vs Random - Min (Random) starts', 'nn_heuristic', 'random_heuristic', PLAYER_PIECE, 5)
     ]
 
     results = []
@@ -80,7 +82,7 @@ def run_experiments():
         tie_rate = total_ties / num_games
         avg_path_length = total_path_length / num_games
 
-        print(f"Experiment completed. Avg Runtime: {avg_runtime:.6f}s, Avg Moves: {avg_moves}, Win Rate: {win_rate:.2f}, Tie Rate: {tie_rate:.2f}, Avg Path length: {avg_path_length}")
+        print(f"Experiment completed. Avg Runtime: {avg_runtime:.6f}s, Avg Moves: {avg_moves}, Win Rate: {win_rate:.2f}, Tie Rate: {tie_rate:.2f}, Avg Path length: {avg_path_length}, Depth: {depth}")
 
         results.append((experiment_name, depth, avg_runtime, avg_moves, win_rate, tie_rate, avg_path_length))
 

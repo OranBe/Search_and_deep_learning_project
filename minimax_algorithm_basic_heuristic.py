@@ -1,7 +1,7 @@
 import math
 import random
 from connect_four_game import *
-from heuristics import BaseHeuristic, BaseHeuristicNorm, BootstrappingConnectFourHeuristic
+from heuristics import BaseHeuristicNorm, BootstrappingConnectFourHeuristic
 
 
 def minimax(state, depth, alpha, beta, maximizingPlayer, heuristic):

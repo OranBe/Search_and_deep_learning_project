@@ -125,10 +125,6 @@ def create_state_with_n_moves(n, starting_player):
     return state
 
 
-
-
-
-
 def test_connect_four_state():
     # Create initial game state
     board = np.zeros((ROWS, COLUMNS))

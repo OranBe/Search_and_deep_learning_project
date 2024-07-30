@@ -1,8 +1,7 @@
 import math
 import random
-from BWAS import BWAS
 from connect_four_game import *
-from heuristics import BootstrappingConnectFourHeuristic, BaseHeuristic
+from heuristics import BootstrappingConnectFourHeuristic
 from minimax_algorithm_basic_heuristic import minimax
 
 
@@ -11,13 +10,13 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic, target_network):
     target_network.load_model()
 
     num_iterations = 100  # Number of bootstrapping iterations
-    batch_size = 50  # Number of states to generate in each batch
-    max_moves = 13
-    depth = 4
+    batch_size = 1000  # Number of states to generate in each batch
+    max_moves = 10
+    max_depth =3
     heuristic = BootstrappingConnectFourHeuristic.score_position
     target_heuristic = target_network.score_position
-    original_training_frequency = 20  # Train the model every 20 iterations
-    update_target_frequency = 40  # Update target network every 10 iterations
+    original_training_frequency = 1  # Train the model every 1 iteration
+    update_target_frequency = 5  # Update target network every 5 iterations
 
     input_data = []
     output_labels = []
@@ -27,7 +26,8 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic, target_network):
         random_states = generate_minibatch_of_random_states(batch_size, max_moves)
         win = 0
         lose = 0
-        for state in random_states:
+        depth = random.randint(1, max_depth)
+        for state, num_random_moves in random_states:
             _, estimated_value = minimax(state, depth, -math.inf, math.inf, True, heuristic)
             path = [state]
             current_state = state
@@ -60,7 +60,7 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic, target_network):
                         output_labels.append(terminal_value)
                 else:
                     terminal_value = 0
-                    for s in path:
+                    for s in path[num_random_moves:]:
                         input_data.append(s)
                         output_labels.append(terminal_value)
 
@@ -90,8 +90,9 @@ def bootstrappingTraining(BootstrappingConnectFourHeuristic, target_network):
 def generate_minibatch_of_random_states(number_of_random_states, max_moves):
     random_states = []
     for i in range(number_of_random_states):
-        state = create_state_with_n_moves(random.randint(1, max_moves), random.randint(1, 2))
-        random_states.append(state)
+        num_random_moves = random.randint(0, max_moves)
+        state = create_state_with_n_moves(num_random_moves, random.randint(1, 2))
+        random_states.append([state, num_random_moves])
     return random_states
 
 
